@@ -15,8 +15,8 @@ class CreateCargosTable extends Migration
     {
         Schema::create('cargos', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->foreignId('rent_id')->constrained()->onDelete('cascade');
-            $table->foreignId('item_id')->constrained()->onDelete('cascade');
+            $table->foreignId('rent_id')->constrained()->onDelete('cascade')->nullable();
+            $table->foreignId('item_id')->constrained()->onDelete('cascade')->nullable();
             $table->timestamps();
         });
     }
