@@ -23,8 +23,11 @@ Route::middleware('auth/api')->get('/user', function (Request $request){
 //ITEMS
     Route::apiResource('/items', 'ItemsController')->middleware('AuthKey');;
 
-//RENT
+//TRUCK
     Route::apiResource('/trucks', 'TrucksController')->middleware('AuthKey');;
+    
+//RENTS
+    Route::apiResource('/rents', 'RentsController')->middleware('AuthKey');;
     
 Auth::routes();
 

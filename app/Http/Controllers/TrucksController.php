@@ -121,7 +121,7 @@ class TrucksController extends Controller
     {
         $rules = [
             'model'   =>  'required|string|between:1,100',
-            'plat_no' =>  'required|string|between:1,20',
+            'plat_no' =>  'required|unique:trucks|string|between:1,20',
         ];
 
         return Validator::make($request->all(), $rules);
