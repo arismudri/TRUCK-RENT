@@ -112,7 +112,7 @@ class ItemsController extends Controller
             $res = ['message' => 'success delete data'];
             return response()->json($res, 200);
         } else {
-            $res = ['message' => 'update failed'];
+            $res = ['message' => 'delete failed'];
             return response()->json($res, 404);
         }
     }

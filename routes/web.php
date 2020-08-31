@@ -13,40 +13,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::middleware('auth/api')->get('/user', function (Request $request){
-//     return $request->user();
-// });
-
-Route::get('/', function () {
-    return view('welcome');
+Route::middleware('auth/api')->get('/user', function (Request $request){
+    return $request->user();
 });
+
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 //ITEMS
-    Route::get('/items', 'ItemsController@index');
-    Route::get('/items/{id}', 'ItemsController@show');
-
-    Route::post('/items', 'ItemsController@store');
-
-    Route::put('/items/{id}', 'ItemsController@update');
-
-    Route::delete('/items/{item}', 'ItemsController@destroy');
+    Route::apiResource('/items', 'ItemsController')->middleware('AuthKey');;
 
 //RENT
-    Route::get('/trucks', 'TrucksController@index');
-    Route::get('/trucks/{id}', 'TrucksController@show');
+    Route::apiResource('/trucks', 'TrucksController')->middleware('AuthKey');;
+    
+Auth::routes();
 
-    Route::post('/trucks', 'TrucksController@store');
-
-    Route::put('/trucks/{id}', 'TrucksController@update');
-
-    Route::delete('/trucks/{id}', 'TrucksController@destroy');
-
-// Route::group(array('prefix'=>'truck_rent'),function(){
-//     Route::resource(
-//         'items',
-//         'ItemsController',
-//         array(
-//             'except'=>array('create','edit')
-//             )
-//         );
-//     }
-// );
+Route::get('/home', 'HomeController@index')->name('home');

@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Rent;
+use App\Rent;
 use Illuminate\Http\Request;
+use Validator;
 
 class RentsController extends Controller
 {
@@ -14,7 +15,14 @@ class RentsController extends Controller
      */
     public function index()
     {
-        //
+        $res = ['message' => 'empty', 'values' => 'empty'];
+
+        $rent  = Rent::get();
+
+        if (count($rent) > 0) {
+            $res = ['message' => 'success', 'values' => $rent];
+        }
+        return response()->json($res, 200);
     }
 
     /**
@@ -25,7 +33,22 @@ class RentsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $validator = $this->rule($request);
+        
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        } else {
+            $rent = Rent::create($request->all());
+    
+            if ($rent) {
+                $res = ['message' => 'success input data', 'values' => $rent];
+            } else {
+                $res = ['message' => 'input failed', 'values' => 'empty'];
+            }
+    
+            return response()->json($res, 201);
+        }
     }
 
     /**
@@ -34,11 +57,20 @@ class RentsController extends Controller
      * @param  \App\Rent  $rent
      * @return \Illuminate\Http\Response
      */
-    public function show(Rent $rent)
+    public function show($id)
     {
-        //
+        
+        $rent = Rent::find($id);
+        
+        if (!is_null($rent)) {
+            $res = ['message' => 'success', 'values' => $rent];
+            return response()->json($res, 200);
+        } else {
+            $res = ['message' => 'empty', 'values' => 'empty'];
+            return response()->json($res, 404);
+        }
     }
-    
+
     /**
      * Update the specified resource in storage.
      *
@@ -46,9 +78,23 @@ class RentsController extends Controller
      * @param  \App\Rent  $rent
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Rent $rent)
+    public function update(Request $request, $id)
     {
-        //
+        $validator = $this->rule($request);
+        
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        } else {
+            $rent = Rent::find($id);
+            
+            if (!is_null($rent) && $rent->update($request->all())) {
+                $res = ['message' => 'success updating data', 'values' => $rent];
+                return response()->json($res, 200);
+            } else {
+                $res = ['message' => 'update failed', 'values' => 'empty'];
+                return response()->json($res, 404);
+            }
+        }
     }
 
     /**
@@ -57,8 +103,29 @@ class RentsController extends Controller
      * @param  \App\Rent  $rent
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Rent $rent)
+    public function destroy(Request $request, $id)
     {
-        //
+        
+        $rent = Rent::find($id);
+
+        if (!is_null($rent) && $rent->delete()) {
+            $res = ['message' => 'success delete data'];
+            return response()->json($res, 200);
+        } else {
+            $res = ['message' => 'delete failed'];
+            return response()->json($res, 404);
+        }
     }
+
+    function rule($request)
+    {
+        $rules = [
+            'nama'  =>  'required|string|between:1,225',
+            'berat' =>  'required|integer|digits_between:1,11',
+            'jumlah' =>  'required|integer|digits_between:1,11',
+        ];
+
+        return Validator::make($request->all(), $rules);
+    }
+
 }

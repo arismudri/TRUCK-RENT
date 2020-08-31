@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Truck;
 use Illuminate\Http\Request;
+use Validator;
 
 class TrucksController extends Controller
 {
@@ -14,14 +15,12 @@ class TrucksController extends Controller
      */
     public function index()
     {
-        $res['message'] = 'empty';
-        $res['values']  = '';
+        $res = ['message' => 'empty', 'values' => 'empty'];
 
-        $truck  = Truck::all();
+        $truck  = Truck::get();
 
         if (count($truck) > 0) {
-            $res['message'] = 'success';
-            $res['values']  = $truck;
+            $res = ['message' => 'success', 'values' => $truck];
         }
         return response()->json($res, 200);
     }
@@ -34,26 +33,22 @@ class TrucksController extends Controller
      */
     public function store(Request $request)
     {
-        $res['message'] = 'input failed';
-        $res['values']  = '';
-        
-        $model   = $request->model;
-        $plat_no  = $request->plat_no;
-        
-        if (!empty($model) && !empty($plat_no)) {
 
-            $save = Truck::create($request->all());
+        $validator = $this->rule($request);
+        
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        } else {
+            $truck = Truck::create($request->all());
     
-            if ($save) {
-                $data = [   'model'    =>  $model,
-                            'plat_no'  =>  $plat_no];
-    
-                $res['message'] = 'success input data';
-                $res['values']  = $data;
+            if ($truck) {
+                $res = ['message' => 'success input data', 'values' => $truck];
+            } else {
+                $res = ['message' => 'input failed', 'values' => 'empty'];
             }
+    
+            return response()->json($res, 201);
         }
-
-        return response()->json($res, 200);
     }
 
     /**
@@ -64,20 +59,16 @@ class TrucksController extends Controller
      */
     public function show($id)
     {
-        $res['message']  = 'empty';
-        $res['values']  = '';
-
-        if (!empty($id)) {
-            
-            $truck = Truck::where('id', $id)->get();
-
-            if (count($truck) > 0) {
-                $res['message']  = 'success';
-                $res['values']  = $truck;
-            }
+        
+        $truck = Truck::find($id);
+        
+        if (!is_null($truck)) {
+            $res = ['message' => 'success', 'values' => $truck];
+            return response()->json($res, 200);
+        } else {
+            $res = ['message' => 'empty', 'values' => 'empty'];
+            return response()->json($res, 404);
         }
-
-        return response()->json($res, 200);
     }
 
     /**
@@ -89,27 +80,21 @@ class TrucksController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $res['message'] = 'update failed';
-        $res['values']  = '';
-
-        $model   = $request->model;
-        $plat_no  = $request->plat_no;
+        $validator = $this->rule($request);
         
-        if (!empty($model) && !empty($plat_no) && !empty($id)) {
-
-            $data = [   'model'    =>  $model,
-                        'plat_no'  =>  $plat_no];
-    
-            $update = Truck::where('id', $id)->update($data);
-    
-            if ($update) {
-                $res['message'] = 'success updating data';
-                $res['values']  = $data;
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        } else {
+            $truck = Truck::find($id);
+            
+            if (!is_null($truck) && $truck->update($request->all())) {
+                $res = ['message' => 'success updating data', 'values' => $truck];
+                return response()->json($res, 200);
+            } else {
+                $res = ['message' => 'update failed', 'values' => 'empty'];
+                return response()->json($res, 404);
             }
         }
-
-
-        return response()->json($res, 200);
     }
 
     /**
@@ -118,20 +103,28 @@ class TrucksController extends Controller
      * @param  \App\Truck  $truck
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $res['message'] = 'delete failed';
         
-        if (!empty($id)) {
+        $truck = Truck::find($id);
 
-            $del = Truck::destroy($id);
-            
-            if ($del) {
-                $res['message'] = 'success deleting data';
-            }
+        if (!is_null($truck) && $truck->delete()) {
+            $res = ['message' => 'success delete data'];
+            return response()->json($res, 200);
+        } else {
+            $res = ['message' => 'delete failed'];
+            return response()->json($res, 404);
         }
-        
-        return response()->json($res, 200);
+    }
+
+    function rule($request)
+    {
+        $rules = [
+            'model'   =>  'required|string|between:1,100',
+            'plat_no' =>  'required|string|between:1,20',
+        ];
+
+        return Validator::make($request->all(), $rules);
     }
 
 }
