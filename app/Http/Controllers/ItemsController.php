@@ -14,17 +14,16 @@ class ItemsController extends Controller
      */
     public function index()
     {
-        //
-    }
+        $res['message'] = 'empty';
+        $res['values']  = '';
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        $item  = Item::all();
+
+        if (count($item) > 0) {
+            $res['message'] = 'success';
+            $res['values']  = $item;
+        }
+        return response()->json($res, 200);
     }
 
     /**
@@ -35,7 +34,28 @@ class ItemsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $res['message'] = 'input failed';
+        $res['values']  = '';
+        
+        $nama   = $request->nama;
+        $berat  = $request->berat;
+        $jumlah = $request->jumlah;
+        
+        if (!empty($nama) && !empty($berat) && !empty($jumlah)) {
+
+            $save = Item::create($request->all());
+    
+            if ($save) {
+                $data = [ 'nama'    =>  $nama,
+                          'berat'   =>  $berat,
+                          'jumlah'  =>  $jumlah ];
+    
+                $res['message'] = 'success input data';
+                $res['values']  = $data;
+            }
+        }
+
+        return response()->json($res, 200);
     }
 
     /**
@@ -44,20 +64,22 @@ class ItemsController extends Controller
      * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function show(Item $item)
+    public function show($id)
     {
-        //
-    }
+        $res['message']  = 'empty';
+        $res['values']  = '';
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Item  $item
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Item $item)
-    {
-        //
+        if (!empty($id)) {
+            
+            $item = Item::where('id', $id)->get();
+
+            if (count($item) > 0) {
+                $res['message']  = 'success';
+                $res['values']  = $item;
+            }
+        }
+
+        return response()->json($res, 200);
     }
 
     /**
@@ -67,9 +89,31 @@ class ItemsController extends Controller
      * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Item $item)
+    public function update(Request $request, $id)
     {
-        //
+        $res['message'] = 'update failed';
+        $res['values']  = '';
+
+        $nama   = $request->nama;
+        $berat  = $request->berat;
+        $jumlah = $request->jumlah;
+        
+        if (!empty($nama) && !empty($berat) && !empty($jumlah) && !empty($id)) {
+
+            $data = [ 'nama'    =>  $nama,
+                      'berat'   =>  $berat,
+                      'jumlah'  =>  $jumlah ];
+    
+            $update = Item::where('id', $id)->update($data);
+    
+            if ($update) {
+                $res['message'] = 'success updating data';
+                $res['values']  = $data;
+            }
+        }
+
+
+        return response()->json($res, 200);
     }
 
     /**
@@ -78,8 +122,20 @@ class ItemsController extends Controller
      * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Item $item)
+    public function destroy($id)
     {
-        //
+        $res['message'] = 'delete failed';
+        
+        if (!empty($id)) {
+
+            $del = Item::destroy($id);
+            
+            if ($del) {
+                $res['message'] = 'success deleting data';
+            }
+        }
+        
+        return response()->json($res, 200);
     }
+
 }
