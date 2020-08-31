@@ -14,7 +14,7 @@ class AddRentCodeToRentsTable extends Migration
     public function up()
     {
         Schema::table('rents', function (Blueprint $table) {
-            $table->string('rent_code')->unique()->after('id');
+            $table->string('rent_code')->unique()->after('id')->nullable();
         });
     }
 

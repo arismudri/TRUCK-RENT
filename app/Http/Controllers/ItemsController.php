@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Item;
 use Illuminate\Http\Request;
+use Validator;
 
 class ItemsController extends Controller
 {
@@ -14,14 +15,12 @@ class ItemsController extends Controller
      */
     public function index()
     {
-        $res['message'] = 'empty';
-        $res['values']  = '';
+        $res = ['message' => 'empty', 'values' => 'empty'];
 
-        $item  = Item::all();
+        $item  = Item::get();
 
         if (count($item) > 0) {
-            $res['message'] = 'success';
-            $res['values']  = $item;
+            $res = ['message' => 'success', 'values' => $item];
         }
         return response()->json($res, 200);
     }
@@ -34,28 +33,22 @@ class ItemsController extends Controller
      */
     public function store(Request $request)
     {
-        $res['message'] = 'input failed';
-        $res['values']  = '';
-        
-        $nama   = $request->nama;
-        $berat  = $request->berat;
-        $jumlah = $request->jumlah;
-        
-        if (!empty($nama) && !empty($berat) && !empty($jumlah)) {
 
-            $save = Item::create($request->all());
+        $validator = $this->rule($request);
+        
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        } else {
+            $item = Item::create($request->all());
     
-            if ($save) {
-                $data = [ 'nama'    =>  $nama,
-                          'berat'   =>  $berat,
-                          'jumlah'  =>  $jumlah ];
-    
-                $res['message'] = 'success input data';
-                $res['values']  = $data;
+            if ($item) {
+                $res = ['message' => 'success input data', 'values' => $item];
+            } else {
+                $res = ['message' => 'input failed', 'values' => 'empty'];
             }
+    
+            return response()->json($res, 201);
         }
-
-        return response()->json($res, 200);
     }
 
     /**
@@ -66,20 +59,16 @@ class ItemsController extends Controller
      */
     public function show($id)
     {
-        $res['message']  = 'empty';
-        $res['values']  = '';
-
-        if (!empty($id)) {
-            
-            $item = Item::where('id', $id)->get();
-
-            if (count($item) > 0) {
-                $res['message']  = 'success';
-                $res['values']  = $item;
-            }
+        
+        $item = Item::find($id);
+        
+        if (!is_null($item)) {
+            $res = ['message' => 'success', 'values' => $item];
+            return response()->json($res, 200);
+        } else {
+            $res = ['message' => 'empty', 'values' => 'empty'];
+            return response()->json($res, 404);
         }
-
-        return response()->json($res, 200);
     }
 
     /**
@@ -91,29 +80,21 @@ class ItemsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $res['message'] = 'update failed';
-        $res['values']  = '';
-
-        $nama   = $request->nama;
-        $berat  = $request->berat;
-        $jumlah = $request->jumlah;
+        $validator = $this->rule($request);
         
-        if (!empty($nama) && !empty($berat) && !empty($jumlah) && !empty($id)) {
-
-            $data = [ 'nama'    =>  $nama,
-                      'berat'   =>  $berat,
-                      'jumlah'  =>  $jumlah ];
-    
-            $update = Item::where('id', $id)->update($data);
-    
-            if ($update) {
-                $res['message'] = 'success updating data';
-                $res['values']  = $data;
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 400);
+        } else {
+            $item = Item::find($id);
+            
+            if (!is_null($item) && $item->update($request->all())) {
+                $res = ['message' => 'success updating data', 'values' => $item];
+                return response()->json($res, 200);
+            } else {
+                $res = ['message' => 'update failed', 'values' => 'empty'];
+                return response()->json($res, 404);
             }
         }
-
-
-        return response()->json($res, 200);
     }
 
     /**
@@ -122,20 +103,29 @@ class ItemsController extends Controller
      * @param  \App\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $res['message'] = 'delete failed';
         
-        if (!empty($id)) {
+        $item = Item::find($id);
 
-            $del = Item::destroy($id);
-            
-            if ($del) {
-                $res['message'] = 'success deleting data';
-            }
+        if (!is_null($item) && $item->delete()) {
+            $res = ['message' => 'success delete data'];
+            return response()->json($res, 200);
+        } else {
+            $res = ['message' => 'update failed'];
+            return response()->json($res, 404);
         }
-        
-        return response()->json($res, 200);
+    }
+
+    function rule($request)
+    {
+        $rules = [
+            'nama'  =>  'required|string|between:1,225',
+            'berat' =>  'required|integer|digits_between:1,11',
+            'jumlah' =>  'required|integer|digits_between:1,11',
+        ];
+
+        return Validator::make($request->all(), $rules);
     }
 
 }

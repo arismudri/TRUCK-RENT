@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Route::middleware('auth/api')->get('/user', function (Request $request){
+//     return $request->user();
+// });
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -24,7 +28,7 @@ Route::get('/', function () {
 
     Route::put('/items/{id}', 'ItemsController@update');
 
-    Route::delete('/items/{id}', 'ItemsController@destroy');
+    Route::delete('/items/{item}', 'ItemsController@destroy');
 
 //RENT
     Route::get('/trucks', 'TrucksController@index');

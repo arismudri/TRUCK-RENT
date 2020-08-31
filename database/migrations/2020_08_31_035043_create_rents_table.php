@@ -15,8 +15,8 @@ class CreateRentsTable extends Migration
     {
         Schema::create('rents', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->foreignId('truck_id')->constrained()->onDelete('cascade');
-            $table->date('tgl');
+            $table->foreignId('truck_id')->constrained()->onDelete('cascade')->nullable();
+            $table->date('tgl')->nullable();
             $table->timestamps();
 
         });
