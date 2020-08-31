@@ -10,6 +10,9 @@
 ## About Laravel
 
 composer install
+
+
 php artisan key:generate
+
 
 APP_KEY = QWERTY
